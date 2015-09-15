@@ -1,3 +1,5 @@
+[![Android Gems](http://www.android-gems.com/badge/DevinShine/MagicCircle.svg?branch=master)](http://www.android-gems.com/lib/DevinShine/MagicCircle)
+
 # MagicCircle
 A magic circle (｀･ω･´)  ノ
 
