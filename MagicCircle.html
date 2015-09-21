@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Magic Circle</title>
+    <meta name="Keywords" content="">
+    <meta name="Description" content="">
+    <style type="text/css">
+        body, h1{margin:0;}
+        canvas{margin: 20px; }
+    </style>
+</head>
+<body>
+<h1>三次贝塞尔曲线</h1>
+<canvas id="canvas" width=1000 height=240 style="border: 1px solid #ccc;"></canvas>
+<script>
+function Point() {
+	var x = 0;
+	var y = 0;
+}
+
+function HPoint() {
+	this.x = 0;
+	this.y = 0;
+	this.left = new Point();
+	this.right = new Point();
+	this.setY = function(y){
+		this.y = y;
+		this.left.y = y;
+		this.right.y = y;
+	};
+	this.adjustAllX = function(offset){
+		this.x +=offset;
+		this.left.x +=offset;
+        this.right.x +=offset;
+	}
+}
+
+function VPoint() {
+ 	this.x = 0;
+	this.y = 0;
+	this.top = new Point();
+	this.bottom = new Point();
+ 	this.setX = function(x){
+ 		this.x = x;
+        this.top.x = x;
+        this.bottom.x = x;
+ 	};
+ 	this.adjustY = function(offset){
+		this.top.y -= offset;
+        this.bottom.y += offset;
+ 	};
+ 	this.adjustAllX = function(offset){
+ 		this.x+= offset;
+        this.top.x+= offset;
+        this.bottom.x+=offset;
+ 	}
+}
+
+var p2 = new VPoint();
+var p4 = new VPoint();
+var p1 = new HPoint();
+var p3 = new HPoint();
+var radius = 100;
+var stretchDistance = radius;
+var c = radius * 0.551915024494;
+var cDistance = c * 0.45;
+var maxLength = 1000 - radius - radius;
+function model0(){
+ 	p1.setY(radius);
+    p3.setY(-radius);
+    p3.x = p1.x = 0;
+    p3.left.x =  p1.left.x = -c;
+    p3.right.x = p1.right.x = c;
+
+    p2.setX(radius);
+    p4.setX(-radius);
+    p2.y = p4.y = 0;
+    p2.top.y =  p4.top.y = -c;
+    p2.bottom.y = p4.bottom.y = c;
+}
+
+function model1(time){
+ 	model0();
+
+    p2.setX(radius+stretchDistance*time*5);
+}
+
+function model2(time){
+	model1(0.2);
+    time = (time - 0.2) * (10 / 3);
+    p1.adjustAllX(stretchDistance/2 * time );
+    p3.adjustAllX(stretchDistance/2 * time );
+    p2.adjustY(cDistance * time);
+    p4.adjustY(cDistance * time);
+}
+
+function model3(time){
+	model2(0.5);
+    time = (time - 0.5) * (10 / 3);
+    p1.adjustAllX(stretchDistance / 2 * time);
+    p3.adjustAllX(stretchDistance / 2 * time);
+    p2.adjustY(-cDistance * time);
+    p4.adjustY(-cDistance * time);
+
+    p4.adjustAllX(stretchDistance / 2 * time);
+}
+
+function model4(time){
+ 	model3(0.8);
+    time = (time - 0.8) * 10;
+    p4.adjustAllX(stretchDistance / 2 * time);
+}
+
+function model5(time){
+ 	model4(0.9);
+    time = time - 0.9;
+    p4.adjustAllX((Math.sin(Math.PI*time*10)*(2/10*radius)));
+}
+var canvas=document.getElementById('canvas');
+var context=canvas.getContext('2d');
+context.translate(radius,radius);
+
+var i = 0;
+var val = 10;
+var count = 100;
+function fuck() {
+	context.clearRect(-radius, -radius, canvas.width, canvas.height);
+	// context.clearRect(0, 0, canvas.width, canvas.height);
+	var time = i*val/1000;
+	console.log(time);
+
+	if(time>=0&&time<=0.2){
+        model1(time);
+    }else if(time>0.2&&time<=0.5){
+        model2(time);
+    }else if(time>0.5&&time<=0.8){
+        model3(time);
+    }else if(time>0.8&&time<=0.9){
+        model4(time);
+    }else if(time>0.9&&time<=1){
+        model5(time);
+    }
+
+	var offset = maxLength*(time-0.2);
+    offset = offset>0?offset:0;
+    p1.adjustAllX(offset);
+    p2.adjustAllX(offset);
+    p3.adjustAllX(offset);
+    p4.adjustAllX(offset);
+
+	// model0();
+	//绘制3次贝塞尔曲线
+	context.beginPath();
+	context.moveTo(p1.x,p1.y);
+	context.bezierCurveTo(p1.right.x, p1.right.y, p2.bottom.x, p2.bottom.y, p2.x,p2.y);
+	context.bezierCurveTo(p2.top.x, p2.top.y, p3.right.x, p3.right.y, p3.x,p3.y);
+	context.bezierCurveTo(p3.left.x, p3.left.y, p4.top.x, p4.top.y, p4.x,p4.y);
+	context.bezierCurveTo(p4.bottom.x,p4.bottom.y,p1.left.x,p1.left.y,p1.x,p1.y);
+	context.strokeStyle = "red";
+	context.fillStyle="red";
+	context.fill();
+	context.stroke();
+	// draw();
+	i++;
+	if(i >= count) {
+		clearInterval(itFuck);
+	}
+}
+var itFuck = setInterval(fuck, val);
+
+</script>
+</body>
+</html>
