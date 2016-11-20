@@ -1,14 +1,19 @@
 package com.shadev.pierrebeziercircle;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
+import android.view.animation.Interpolator;
 import android.view.animation.Transformation;
 
 /**
@@ -18,6 +23,8 @@ import android.view.animation.Transformation;
  * 我是来填坑的
  */
 public class MagicCircle extends View {
+	private static final String TAG = "MagicCircle";
+
 	//三阶贝塞尔绘制圆形需要用到的黑魔法
 	private static final float BLACK_MAGIC = 0.551915024494f;
 
@@ -45,6 +52,16 @@ public class MagicCircle extends View {
 	//左右两个点
 	private VPoint mPoint2, mPoint4;
 
+	private int mColor;
+
+	//动画相关
+	private int mDuration;
+	private int mRepeatCount;
+	private int mRepeatMode;
+	private int mStartColor;
+	private int mEndColor;
+	private Interpolator mInterpolator;
+
 	public MagicCircle(Context context) {
 		this(context, null, 0);
 	}
@@ -60,7 +77,8 @@ public class MagicCircle extends View {
 
 	private void init() {
 		mFillCirclePaint = new Paint();
-		mFillCirclePaint.setColor(0xFFfe626d);
+		mColor = 0xFFfe626d;
+		mFillCirclePaint.setColor(mColor);
 		mFillCirclePaint.setStyle(Paint.Style.FILL);
 		mFillCirclePaint.setAntiAlias(true);
 		mFillCirclePaint.setDither(true);
@@ -229,14 +247,19 @@ public class MagicCircle extends View {
 		mPoint4.adjustAllX((float) (Math.sin(Math.PI * time * 10f) * (2 / 10f * mRadius)));
 	}
 
-	public void startAnimation() {
+	private void startAnimation() {
 		mPath.reset();
 		mInterpolatedTime = 0;
 		MoveAnimation move = new MoveAnimation();
-		move.setDuration(5000);
-		move.setInterpolator(new AccelerateDecelerateInterpolator());
-		move.setRepeatCount(Animation.INFINITE);
-		move.setRepeatMode(Animation.REVERSE);
+		move.setDuration(mDuration);
+		move.setInterpolator(mInterpolator);
+		if (mRepeatCount != 0) {
+			move.setRepeatCount(mRepeatCount);
+		}
+		if (mRepeatMode != 0) {
+			move.setRepeatMode(mRepeatMode);
+		}
+
 		startAnimation(move);
 	}
 
@@ -267,6 +290,7 @@ public class MagicCircle extends View {
 	class HPoint {
 		public float x;
 		public float y;
+
 		public PointF left = new PointF();
 		public PointF right = new PointF();
 
@@ -275,7 +299,6 @@ public class MagicCircle extends View {
 			left.y = y;
 			right.y = y;
 		}
-
 		public void adjustAllX(float offset) {
 			this.x += offset;
 			left.x += offset;
@@ -284,12 +307,95 @@ public class MagicCircle extends View {
 	}
 
 	private class MoveAnimation extends Animation {
-
 		@Override
 		protected void applyTransformation(float interpolatedTime, Transformation t) {
 			super.applyTransformation(interpolatedTime, t);
 			mInterpolatedTime = interpolatedTime;
 			invalidate();
+		}
+	}
+
+	private void startColorAnim() {
+		//坑爹的ofArgb要api21以上才能用
+		ValueAnimator va = ValueAnimator.ofObject(new ArgbEvaluator(), mStartColor, mEndColor);
+		va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+			@Override
+			public void onAnimationUpdate(ValueAnimator animation) {
+				mFillCirclePaint.setColor((Integer) animation.getAnimatedValue());
+			}
+		});
+		va.setDuration(mDuration);
+		va.start();
+	}
+
+	static class Builder {
+		private boolean canDoAnim;
+		private MagicCircle mMagicCircle;
+
+		public Builder(@NonNull MagicCircle magicCircle) {
+			mMagicCircle = magicCircle;
+
+			//设置默认值
+			mMagicCircle.mDuration = 1000;
+			mMagicCircle.mRepeatCount = 0;
+			mMagicCircle.mRepeatMode = 0;
+			mMagicCircle.mStartColor = -1;
+			mMagicCircle.mEndColor = -1;
+			mMagicCircle.mInterpolator = new AccelerateDecelerateInterpolator();
+
+			//开始动画的标识符
+			canDoAnim = true;
+		}
+
+		public Builder setInterpolator(Interpolator interpolator) {
+			mMagicCircle.mInterpolator = interpolator;
+			return this;
+		}
+
+		public Builder setStartColor(int color) {
+			mMagicCircle.mStartColor = color;
+			return this;
+		}
+
+		public Builder setEndColor(int color) {
+			mMagicCircle.mEndColor = color;
+			return this;
+		}
+
+		public Builder setRepeatCount(int count) {
+			mMagicCircle.mRepeatCount = count;
+			return this;
+		}
+
+		public Builder setRepeatMode(int mode) {
+			mMagicCircle.mRepeatMode = mode;
+			return this;
+		}
+
+		public Builder setDuration(int duration) {
+			mMagicCircle.mDuration = duration;
+			return this;
+		}
+
+		public Builder setColor(int color) {
+			mMagicCircle.mFillCirclePaint.setColor(color);
+			return this;
+		}
+
+		public void start() {
+			if (mMagicCircle == null) {
+				Log.e(TAG, "View对象不能为空");
+				return;
+			}
+
+			if (canDoAnim) {
+				canDoAnim = false;
+				mMagicCircle.startAnimation();
+
+				if (mMagicCircle.mStartColor != -1) {
+					mMagicCircle.startColorAnim();
+				}
+			}
 		}
 	}
 }
