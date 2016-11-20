@@ -12,10 +12,13 @@ import android.view.animation.Animation;
 import android.view.animation.Transformation;
 
 /**
- * 代码写的比较仓猝,以后再优化写法和补充那些数值的具体含义,求勿喷QAQ
+ * 原作者相关教程
+ * http://www.jianshu.com/p/791d3a791ec2
+ * <p/>
+ * 我是来填坑的
  */
 public class MagicCircle extends View {
-	//三阶贝塞尔绘制圆形需要用到的神奇数字
+	//三阶贝塞尔绘制圆形需要用到的黑魔法
 	private static final float BLACK_MAGIC = 0.551915024494f;
 
 	private Path mPath;
@@ -35,9 +38,13 @@ public class MagicCircle extends View {
 	private float mMoveDistance;
 	private float mDistance;
 	private float mRadius;
-	private float c;
-	private VPoint mPoint2, mPoint4;
+	//控制点，需与BLACK_MAGIC配合
+	private float mMagicControl;
+
+	//上下两个点
 	private HPoint mPoint1, mPoint3;
+	//左右两个点
+	private VPoint mPoint2, mPoint4;
 
 
 	public MagicCircle(Context context) {
@@ -59,7 +66,9 @@ public class MagicCircle extends View {
 		mFillCirclePaint.setStyle(Paint.Style.FILL);
 		mFillCirclePaint.setStrokeWidth(1);
 		mFillCirclePaint.setAntiAlias(true);
+
 		mPath = new Path();
+
 		mPoint2 = new VPoint();
 		mPoint4 = new VPoint();
 
@@ -75,10 +84,10 @@ public class MagicCircle extends View {
 		mCenterX = mWidth / 2;
 		mCenterY = mHeight / 2;
 		mRadius = 50;
-		c = mRadius * BLACK_MAGIC;
+		mMagicControl = mRadius * BLACK_MAGIC;
 		mStretchDistance = mRadius;
 		mMoveDistance = mRadius * (3 / 5f);
-		mDistance = c * 0.45f;
+		mDistance = mMagicControl * 0.45f;
 		mMaxLength = mWidth - mRadius * 2;
 	}
 
@@ -86,6 +95,7 @@ public class MagicCircle extends View {
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
 		mPath.reset();
+		//将画布坐标轴中心移至初始圆心
 		canvas.translate(mRadius, mRadius);
 
 		if (mInterpolatedTime >= 0 && mInterpolatedTime <= 0.2) {
@@ -117,56 +127,95 @@ public class MagicCircle extends View {
 
 	}
 
+	/**
+	 * 设置初始状态路径
+	 * 对应教程状态1
+	 */
 	private void model0() {
 		mPoint1.setY(mRadius);
 		mPoint3.setY(-mRadius);
 		mPoint3.x = mPoint1.x = 0;
-		mPoint3.left.x = mPoint1.left.x = -c;
-		mPoint3.right.x = mPoint1.right.x = c;
+		mPoint3.left.x = mPoint1.left.x = -mMagicControl;
+		mPoint3.right.x = mPoint1.right.x = mMagicControl;
 
 		mPoint2.setX(mRadius);
 		mPoint4.setX(-mRadius);
 		mPoint2.y = mPoint4.y = 0;
-		mPoint2.top.y = mPoint4.top.y = -c;
-		mPoint2.bottom.y = mPoint4.bottom.y = c;
+		mPoint2.top.y = mPoint4.top.y = -mMagicControl;
+		mPoint2.bottom.y = mPoint4.bottom.y = mMagicControl;
 	}
 
+	/**
+	 * 设置状态1路径，根据时间点不同，数据点的x坐标发生对应变化
+	 * 对应教程状态2
+	 *
+	 * @param time 时间点
+	 */
 	private void model1(float time) {//0~0.2
 		model0();
 
 		mPoint2.setX(mRadius + mStretchDistance * time * 5);
 	}
 
+	/**
+	 * 设置状态2路径，根据时间点不同，数据点的x坐标发生对应变化
+	 * 对应教程状态3
+	 *
+	 * @param time 时间点
+	 */
 	private void model2(float time) {//0.2~0.5
 		model1(0.2f);
 		time = (time - 0.2f) * (10f / 3);
+
 		mPoint1.adjustAllX(mStretchDistance / 2 * time);
 		mPoint3.adjustAllX(mStretchDistance / 2 * time);
+
 		mPoint2.adjustY(mDistance * time);
 		mPoint4.adjustY(mDistance * time);
 	}
 
+	/**
+	 * 设置状态3路径，根据时间点不同，数据点的x坐标发生对应变化
+	 * 对应教程状态3
+	 *
+	 * @param time 时间点
+	 */
 	private void model3(float time) {//0.5~0.8
 		model2(0.5f);
 		time = (time - 0.5f) * (10f / 3);
+
 		mPoint1.adjustAllX(mStretchDistance / 2 * time);
 		mPoint3.adjustAllX(mStretchDistance / 2 * time);
+
 		mPoint2.adjustY(-mDistance * time);
 		mPoint4.adjustY(-mDistance * time);
 
 		mPoint4.adjustAllX(mStretchDistance / 2 * time);
-
 	}
 
+	/**
+	 * 设置状态4路径，根据时间点不同，数据点的x坐标发生对应变化
+	 * 对应教程状态4
+	 *
+	 * @param time 时间点
+	 */
 	private void model4(float time) {//0.8~0.9
 		model3(0.8f);
 		time = (time - 0.8f) * 10;
+
 		mPoint4.adjustAllX(mStretchDistance / 2 * time);
 	}
 
+	/**
+	 * 设置状态5路径，根据时间点不同，数据点的x坐标发生对应变化
+	 * 对应教程状态5，有回弹效果
+	 *
+	 * @param time 时间点
+	 */
 	private void model5(float time) {
 		model4(0.9f);
 		time = time - 0.9f;
+
 		mPoint4.adjustAllX((float) (Math.sin(Math.PI * time * 10f) * (2 / 10f * mRadius)));
 	}
 
@@ -174,10 +223,10 @@ public class MagicCircle extends View {
 		mPath.reset();
 		mInterpolatedTime = 0;
 		MoveAnimation move = new MoveAnimation();
-		move.setDuration(1000);
-        move.setInterpolator(new AccelerateDecelerateInterpolator());
-		//move.setRepeatCount(Animation.INFINITE);
-		//move.setRepeatMode(Animation.REVERSE);
+		move.setDuration(5000);
+		move.setInterpolator(new AccelerateDecelerateInterpolator());
+		move.setRepeatCount(Animation.INFINITE);
+		move.setRepeatMode(Animation.REVERSE);
 		startAnimation(move);
 	}
 
