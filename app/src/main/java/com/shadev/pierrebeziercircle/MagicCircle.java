@@ -96,17 +96,7 @@ public class MagicCircle extends View {
 		canvas.translate(mRadius, mRadius);
 
 		//分阶段设置控制点和数据点坐标
-		if (mInterpolatedTime >= 0 && mInterpolatedTime <= 0.2) {
-			model1(mInterpolatedTime);
-		} else if (mInterpolatedTime > 0.2 && mInterpolatedTime <= 0.5) {
-			model2(mInterpolatedTime);
-		} else if (mInterpolatedTime > 0.5 && mInterpolatedTime <= 0.8) {
-			model3(mInterpolatedTime);
-		} else if (mInterpolatedTime > 0.8 && mInterpolatedTime <= 0.9) {
-			model4(mInterpolatedTime);
-		} else if (mInterpolatedTime > 0.9 && mInterpolatedTime <= 1) {
-			model5(mInterpolatedTime);
-		}
+		setModelStatus(mInterpolatedTime);
 
 		//实时改变控制点的x坐标
 		float offset = mMaxLength * (mInterpolatedTime - 0.2f);
@@ -125,6 +115,24 @@ public class MagicCircle extends View {
 
 		//绘制路径，好吧，这句话是多余的
 		canvas.drawPath(mPath, mFillCirclePaint);
+	}
+
+	public void setModelStatus(float interpolatedTime) {
+		mInterpolatedTime = interpolatedTime;
+
+		if (mInterpolatedTime >= 0 && mInterpolatedTime <= 0.2) {
+			model1(mInterpolatedTime);
+		} else if (mInterpolatedTime > 0.2 && mInterpolatedTime <= 0.5) {
+			model2(mInterpolatedTime);
+		} else if (mInterpolatedTime > 0.5 && mInterpolatedTime <= 0.8) {
+			model3(mInterpolatedTime);
+		} else if (mInterpolatedTime > 0.8 && mInterpolatedTime <= 0.9) {
+			model4(mInterpolatedTime);
+		} else if (mInterpolatedTime > 0.9 && mInterpolatedTime <= 1) {
+			model5(mInterpolatedTime);
+		}
+
+		invalidate();
 	}
 
 	/**
@@ -225,7 +233,7 @@ public class MagicCircle extends View {
 		mPath.reset();
 		mInterpolatedTime = 0;
 		MoveAnimation move = new MoveAnimation();
-		move.setDuration(1000);
+		move.setDuration(5000);
 		move.setInterpolator(new AccelerateDecelerateInterpolator());
 		move.setRepeatCount(Animation.INFINITE);
 		move.setRepeatMode(Animation.REVERSE);
