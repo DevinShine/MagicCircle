@@ -7,7 +7,6 @@ import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 import android.view.animation.Transformation;
 
@@ -67,19 +66,20 @@ public class MagicCircle extends View {
         p3 = new HPoint();
     }
 
-    @Override protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        super.onLayout(changed, left, top, right, bottom);
-        width = getWidth();
-        height = getHeight();
-        centerX = width / 2;
-        centerY = height / 2;
-        radius = 50;
-        c = radius*blackMagic;
-        stretchDistance = radius;
-        moveDistance = radius*(3/5f);
-        cDistance = c*0.45f;
-        maxLength = width - radius -radius;
-    }
+	@Override
+	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+		super.onSizeChanged(w, h, oldw, oldh);
+		width = getWidth();
+		height = getHeight();
+		centerX = width / 2;
+		centerY = height / 2;
+		radius = 50;
+		c = radius*blackMagic;
+		stretchDistance = radius;
+		moveDistance = radius*(3/5f);
+		cDistance = c*0.45f;
+		maxLength = width - radius -radius;
+	}
 
     @Override protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -226,7 +226,7 @@ public class MagicCircle extends View {
         mInterpolatedTime = 0;
         MoveAnimation move = new MoveAnimation();
         move.setDuration(1000);
-        move.setInterpolator(new AccelerateDecelerateInterpolator());
+//        move.setInterpolator(new OvershootInterpolator());
         //move.setRepeatCount(Animation.INFINITE);
         //move.setRepeatMode(Animation.REVERSE);
         startAnimation(move);
