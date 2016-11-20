@@ -35,7 +35,6 @@ public class MagicCircle extends View {
 	private float mMaxLength;
 	private float mInterpolatedTime;
 	private float mStretchDistance;
-	private float mMoveDistance;
 	private float mDistance;
 	private float mRadius;
 	//控制点，需与BLACK_MAGIC配合
@@ -86,7 +85,6 @@ public class MagicCircle extends View {
 		mRadius = 50;
 		mMagicControl = mRadius * BLACK_MAGIC;
 		mStretchDistance = mRadius;
-		mMoveDistance = mRadius * (3 / 5f);
 		mDistance = mMagicControl * 0.45f;
 		mMaxLength = mWidth - mRadius * 2;
 	}
