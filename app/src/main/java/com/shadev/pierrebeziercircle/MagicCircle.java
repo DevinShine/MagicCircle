@@ -95,6 +95,7 @@ public class MagicCircle extends View {
 		//将画布坐标轴中心移至初始圆心
 		canvas.translate(mRadius, mRadius);
 
+		//分阶段设置控制点和数据点坐标
 		if (mInterpolatedTime >= 0 && mInterpolatedTime <= 0.2) {
 			model1(mInterpolatedTime);
 		} else if (mInterpolatedTime > 0.2 && mInterpolatedTime <= 0.5) {
@@ -107,6 +108,7 @@ public class MagicCircle extends View {
 			model5(mInterpolatedTime);
 		}
 
+		//实时改变控制点的x坐标
 		float offset = mMaxLength * (mInterpolatedTime - 0.2f);
 		offset = offset > 0 ? offset : 0;
 		mPoint1.adjustAllX(offset);
@@ -114,14 +116,15 @@ public class MagicCircle extends View {
 		mPoint3.adjustAllX(offset);
 		mPoint4.adjustAllX(offset);
 
+		//设置路径，可参考教程
 		mPath.moveTo(mPoint1.x, mPoint1.y);
 		mPath.cubicTo(mPoint1.right.x, mPoint1.right.y, mPoint2.bottom.x, mPoint2.bottom.y, mPoint2.x, mPoint2.y);
 		mPath.cubicTo(mPoint2.top.x, mPoint2.top.y, mPoint3.right.x, mPoint3.right.y, mPoint3.x, mPoint3.y);
 		mPath.cubicTo(mPoint3.left.x, mPoint3.left.y, mPoint4.top.x, mPoint4.top.y, mPoint4.x, mPoint4.y);
 		mPath.cubicTo(mPoint4.bottom.x, mPoint4.bottom.y, mPoint1.left.x, mPoint1.left.y, mPoint1.x, mPoint1.y);
 
+		//绘制路径，好吧，这句话是多余的
 		canvas.drawPath(mPath, mFillCirclePaint);
-
 	}
 
 	/**
@@ -162,6 +165,8 @@ public class MagicCircle extends View {
 	 */
 	private void model2(float time) {//0.2~0.5
 		model1(0.2f);
+		//将时间变化值调整为0-1，便于adjustAllX和adjustY根据比例计算偏移值
+		//后同
 		time = (time - 0.2f) * (10f / 3);
 
 		mPoint1.adjustAllX(mStretchDistance / 2 * time);
@@ -220,7 +225,7 @@ public class MagicCircle extends View {
 		mPath.reset();
 		mInterpolatedTime = 0;
 		MoveAnimation move = new MoveAnimation();
-		move.setDuration(5000);
+		move.setDuration(1000);
 		move.setInterpolator(new AccelerateDecelerateInterpolator());
 		move.setRepeatCount(Animation.INFINITE);
 		move.setRepeatMode(Animation.REVERSE);
