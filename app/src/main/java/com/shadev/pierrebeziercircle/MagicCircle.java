@@ -45,7 +45,6 @@ public class MagicCircle extends View {
 	//左右两个点
 	private VPoint mPoint2, mPoint4;
 
-
 	public MagicCircle(Context context) {
 		this(context, null, 0);
 	}
@@ -63,8 +62,8 @@ public class MagicCircle extends View {
 		mFillCirclePaint = new Paint();
 		mFillCirclePaint.setColor(0xFFfe626d);
 		mFillCirclePaint.setStyle(Paint.Style.FILL);
-		mFillCirclePaint.setStrokeWidth(1);
 		mFillCirclePaint.setAntiAlias(true);
+		mFillCirclePaint.setDither(true);
 
 		mPath = new Path();
 
