@@ -17,10 +17,9 @@ import android.view.animation.Interpolator;
 import android.view.animation.Transformation;
 
 /**
- * 原作者相关教程
+ * 作者相关教程
  * http://www.jianshu.com/p/791d3a791ec2
  * <p/>
- * 我是来填坑的
  */
 public class MagicCircle extends View {
 	private static final String TAG = "MagicCircle";
@@ -34,10 +33,6 @@ public class MagicCircle extends View {
 	//View的尺寸,View应该是正方形，所以宽高是一样的
 	private int mWidth;
 	private int mHeight;
-
-	//View的中心坐标
-	private int mCenterX;
-	private int mCenterY;
 
 	private float mMaxLength;
 	private float mInterpolatedTime;
@@ -97,8 +92,6 @@ public class MagicCircle extends View {
 		super.onSizeChanged(w, h, oldw, oldh);
 		mWidth = w;
 		mHeight = h;
-		mCenterX = mWidth / 2;
-		mCenterY = mHeight / 2;
 		mRadius = 50;
 		mMagicControl = mRadius * BLACK_MAGIC;
 		mStretchDistance = mRadius;
@@ -131,7 +124,6 @@ public class MagicCircle extends View {
 		mPath.cubicTo(mPoint3.left.x, mPoint3.left.y, mPoint4.top.x, mPoint4.top.y, mPoint4.x, mPoint4.y);
 		mPath.cubicTo(mPoint4.bottom.x, mPoint4.bottom.y, mPoint1.left.x, mPoint1.left.y, mPoint1.x, mPoint1.y);
 
-		//绘制路径，好吧，这句话是多余的
 		canvas.drawPath(mPath, mFillCirclePaint);
 	}
 
@@ -247,7 +239,7 @@ public class MagicCircle extends View {
 		mPoint4.adjustAllX((float) (Math.sin(Math.PI * time * 10f) * (2 / 10f * mRadius)));
 	}
 
-	private void startAnimation() {
+	public void startAnimation() {
 		mPath.reset();
 		mInterpolatedTime = 0;
 		MoveAnimation move = new MoveAnimation();
@@ -299,6 +291,7 @@ public class MagicCircle extends View {
 			left.y = y;
 			right.y = y;
 		}
+
 		public void adjustAllX(float offset) {
 			this.x += offset;
 			left.x += offset;
@@ -324,12 +317,18 @@ public class MagicCircle extends View {
 				mFillCirclePaint.setColor((Integer) animation.getAnimatedValue());
 			}
 		});
+		if (mRepeatCount != 0) {
+			va.setRepeatCount(mRepeatCount);
+		}
+		if (mRepeatMode != 0) {
+			va.setRepeatMode(mRepeatMode);
+		}
 		va.setDuration(mDuration);
 		va.start();
 	}
 
 	static class Builder {
-		private boolean canDoAnim;
+		private static final int ERROR_VALUE = -1;
 		private MagicCircle mMagicCircle;
 
 		public Builder(@NonNull MagicCircle magicCircle) {
@@ -342,9 +341,6 @@ public class MagicCircle extends View {
 			mMagicCircle.mStartColor = -1;
 			mMagicCircle.mEndColor = -1;
 			mMagicCircle.mInterpolator = new AccelerateDecelerateInterpolator();
-
-			//开始动画的标识符
-			canDoAnim = true;
 		}
 
 		public Builder setInterpolator(Interpolator interpolator) {
@@ -388,13 +384,11 @@ public class MagicCircle extends View {
 				return;
 			}
 
-			if (canDoAnim) {
-				canDoAnim = false;
-				mMagicCircle.startAnimation();
+			mMagicCircle.startAnimation();
 
-				if (mMagicCircle.mStartColor != -1) {
-					mMagicCircle.startColorAnim();
-				}
+			if (mMagicCircle.mStartColor != ERROR_VALUE
+					&& mMagicCircle.mEndColor != ERROR_VALUE) {
+				mMagicCircle.startColorAnim();
 			}
 		}
 	}
